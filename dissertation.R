@@ -1,4 +1,4 @@
-setwd("")
+setwd("")#your working directory
 require(AER)
 require(car)
 require(stargazer)
