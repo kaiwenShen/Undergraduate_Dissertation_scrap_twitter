@@ -7,6 +7,6 @@ you also need a working twitter account & password, as suggested in the python s
 Also,the twitter folder already have the scraped raw tweets, and the df_res folder already have the sentiment analysis result processed, the twitter search key words are "Comscore", "Rentrak", "Comscore Merger", "Rentrak Merger". 
 
 # Short-term event study methodology
-the comscore.csv and rentrak.csv are the data collected from WRDS CRSP 
+The comscore.csv and rentrak.csv are the data collected from WRDS CRSP 
 make sure the R code and these file are under the same root when you run the code
 in st_res folder is the dataframe result of the data
