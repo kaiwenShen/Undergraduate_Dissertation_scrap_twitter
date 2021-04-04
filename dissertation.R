@@ -801,3 +801,15 @@ resettest(reg_sentiment_rt_2) #all pass
 bgtest(reg_sentiment_comb_8,order = 5)
 bgtest(reg_sentiment_cs_2,order = 5)
 bgtest(reg_sentiment_rt_2,order = 5) #all pass
+####export data####
+write.csv(test_period_1_comb1,"st_result\\test_period_1_comb1.csv", row.names = FALSE)
+write.csv(test_period_1_cs,"st_result\\test_period_1_cs.csv", row.names = FALSE)
+write.csv(test_period_1_rt,"st_result\\test_period_1_rt.csv", row.names = FALSE)
+
+write.csv(test_period_2_comb1,"st_result\\test_period_2_comb2.csv", row.names = FALSE)
+write.csv(test_period_2_cs,"st_result\\test_period_2_cs.csv", row.names = FALSE)
+write.csv(test_period_2_rt,"st_result\\test_period_2_rt.csv", row.names = FALSE)
+
+write.csv(test_period_3_comb3,"st_result\\test_period_3_comb3.csv", row.names = FALSE)
+write.csv(test_period_3_cs,"st_result\\test_period_3_cs.csv", row.names = FALSE)
+write.csv(test_period_3_rt,"st_result\\test_period_3_rt.csv", row.names = FALSE)
