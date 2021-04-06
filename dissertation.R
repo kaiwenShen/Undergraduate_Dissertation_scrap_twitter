@@ -1,4 +1,4 @@
-setwd("")#your working directory
+setwd("C:/Users/kevin/Desktop/uni_of_zoom/Emperical_Finance")
 require(AER)
 require(car)
 require(stargazer)
@@ -135,6 +135,7 @@ patell_inrow = function(abnormal_return,test_mkt_return,est_data,reg_residuals){
   v = abnormal_return/(se*sqrt(c))
   return (v)
 }
+
 #time period 1
 t_1_cs = sum(
   patell_inrow(
@@ -233,18 +234,18 @@ total_t
 p_val =as.data.frame(
   rbind(
     cbind(
-      2*pt(-abs(total_t[1,1]),nrow(test_period_1_cs)),
-      2*pt(-abs(total_t[1,2]),nrow(test_period_1_rt)),
+      pt((total_t[1,1]),nrow(test_period_1_cs),lower.tail = TRUE),
+      pt((total_t[1,2]),nrow(test_period_1_rt),lower.tail = FALSE),
       2*pt(-abs(total_t[1,3]),nrow(test_period_1_comb1))
     ),
     cbind(
-      2*pt(-abs(total_t[2,1]),nrow(test_period_2_cs)),
-      2*pt(-abs(total_t[2,2]),nrow(test_period_2_rt)),
+      pt((total_t[2,1]),nrow(test_period_2_cs),lower.tail = TRUE),
+      pt((total_t[2,2]),nrow(test_period_2_rt),lower.tail = FALSE),
       2*pt(-abs(total_t[2,3]),nrow(test_period_2_comb2))
     ),
     cbind(
-      2*pt(-abs(total_t[3,1]),nrow(test_period_3_cs)),
-      2*pt(-abs(total_t[3,2]),nrow(test_period_3_rt)),
+      pt((total_t[3,1]),nrow(test_period_3_cs),lower.tail = TRUE),
+      pt((total_t[3,2]),nrow(test_period_3_rt),lower.tail = FALSE),
       2*pt(-abs(total_t[3,3]),nrow(test_period_3_comb3))
     )
   ),row.names = c("test_period_1","test_period_2","test_period_3")
@@ -450,18 +451,18 @@ total_t_sw
 p_val_sw =as.data.frame(
   rbind(
     cbind(
-      2*pt(-abs(total_t_sw[1,1]),nrow(test_period_1_cs)),
-      2*pt(-abs(total_t_sw[1,2]),nrow(test_period_1_rt)),
+      pt((total_t_sw[1,1]),nrow(test_period_1_cs),lower.tail = TRUE),
+      pt((total_t_sw[1,2]),nrow(test_period_1_rt),lower.tail = FALSE),
       2*pt(-abs(total_t_sw[1,3]),nrow(test_period_1_comb1))
     ),
     cbind(
-      2*pt(-abs(total_t_sw[2,1]),nrow(test_period_2_cs)),
-      2*pt(-abs(total_t_sw[2,2]),nrow(test_period_2_rt)),
+      pt((total_t_sw[2,1]),nrow(test_period_2_cs),lower.tail = TRUE),
+      pt((total_t_sw[2,2]),nrow(test_period_2_rt),lower.tail = FALSE),
       2*pt(-abs(total_t_sw[2,3]),nrow(test_period_2_comb2))
     ),
     cbind(
-      2*pt(-abs(total_t_sw[3,1]),nrow(test_period_3_cs)),
-      2*pt(-abs(total_t_sw[3,2]),nrow(test_period_3_rt)),
+      pt(-abs(total_t_sw[3,1]),nrow(test_period_3_cs),lower.tail = TRUE),
+      pt(-abs(total_t_sw[3,2]),nrow(test_period_3_rt),lower.tail = FALSE),
       2*pt(-abs(total_t_sw[3,3]),nrow(test_period_3_comb3))
     )
   ),row.names = c("test_period_1","test_period_2","test_period_3")
@@ -537,8 +538,8 @@ split_add = function(df,mid_date){
   down = df[(df_index+1):nrow(df),]
   mid = as.data.frame(
     rbind(
-      cbind(1,temp[1,2]/2,temp[1,3]/2,0,temp[1,5]),
-      cbind(2,temp[1,2]/2,temp[1,3]/2,0,temp[1,5])
+      cbind(1,temp[1,2]/2,temp[1,3]/2,0,temp[1,5]/2),
+      cbind(2,temp[1,2]/2,temp[1,3]/2,0,temp[1,5]/2)
     )
   )
   colnames(mid)=c("Time","num_of_tweets","num_of_positive","pct","num_of_negative")
@@ -657,7 +658,7 @@ test_period_3_comb3=merge(test_period_3_comb3,sentiment_cs,by="date",all=TRUE)
 test_period_3_comb3=merge(test_period_3_comb3,sentiment_rt,by="date",all=TRUE)
 test_period_3_comb3=merge(test_period_3_comb3,sentiment_rt_mg,by="date",all=TRUE)
 
-####iterative regression to find the best combination####
+####backward elimination regression to find the best combination####
 reg_sentiment_cs_1=lm(abnormal_sw~0+cs_num_positive+cs_num_neg+cs_pct,
                       data=test_period_3_cs,na.action=na.omit)
 reg_sentiment_cs_2=lm(abnormal_sw~0+cs_num_neg+cs_pct,
@@ -801,15 +802,135 @@ resettest(reg_sentiment_rt_2) #all pass
 bgtest(reg_sentiment_comb_8,order = 5)
 bgtest(reg_sentiment_cs_2,order = 5)
 bgtest(reg_sentiment_rt_2,order = 5) #all pass
-####export data####
-write.csv(test_period_1_comb1,"st_result\\test_period_1_comb1.csv", row.names = FALSE)
-write.csv(test_period_1_cs,"st_result\\test_period_1_cs.csv", row.names = FALSE)
-write.csv(test_period_1_rt,"st_result\\test_period_1_rt.csv", row.names = FALSE)
 
-write.csv(test_period_2_comb1,"st_result\\test_period_2_comb2.csv", row.names = FALSE)
-write.csv(test_period_2_cs,"st_result\\test_period_2_cs.csv", row.names = FALSE)
-write.csv(test_period_2_rt,"st_result\\test_period_2_rt.csv", row.names = FALSE)
+###store the test_period in csv###
+# write.csv(test_period_1_comb1,"st_result\\test_period_1_comb1.csv", row.names = FALSE)
+# write.csv(test_period_1_cs,"st_result\\test_period_1_cs.csv", row.names = FALSE)
+# write.csv(test_period_1_rt,"st_result\\test_period_1_rt.csv", row.names = FALSE)
+# 
+# write.csv(test_period_2_comb1,"st_result\\test_period_2_comb2.csv", row.names = FALSE)
+# write.csv(test_period_2_cs,"st_result\\test_period_2_cs.csv", row.names = FALSE)
+# write.csv(test_period_2_rt,"st_result\\test_period_2_rt.csv", row.names = FALSE)
+# 
+# write.csv(test_period_3_comb3,"st_result\\test_period_3_comb3.csv", row.names = FALSE)
+# write.csv(test_period_3_cs,"st_result\\test_period_3_cs.csv", row.names = FALSE)
+# write.csv(test_period_3_rt,"st_result\\test_period_3_rt.csv", row.names = FALSE)
 
-write.csv(test_period_3_comb3,"st_result\\test_period_3_comb3.csv", row.names = FALSE)
-write.csv(test_period_3_cs,"st_result\\test_period_3_cs.csv", row.names = FALSE)
-write.csv(test_period_3_rt,"st_result\\test_period_3_rt.csv", row.names = FALSE)
+####sentiment regress on pure abnormal return####
+reg_sentiment_cs_v_1=lm(abnormal~0+cs_num_positive+cs_num_neg+cs_pct,
+                      data=test_period_3_cs,na.action=na.omit)
+reg_sentiment_cs_v_2=lm(abnormal~0+cs_num_neg+cs_pct,
+                      data=test_period_3_cs,na.action=na.omit)
+stargazer(reg_sentiment_cs_v_1,reg_sentiment_cs_v_2,type = "text")
+
+reg_sentiment_rt_v_1=lm(abnormal~0+rt_num_positive+rt_num_neg+rt_pct,
+                      data=test_period_3_rt,na.action=na.omit)
+reg_sentiment_rt_v_2=lm(abnormal~0+rt_num_neg+rt_pct,
+                      data=test_period_3_rt,na.action=na.omit)
+reg_sentiment_rt_v_3=lm(abnormal~0+rt_num_neg,
+                      data=test_period_3_rt,na.action=na.omit)#decrease in R2, no good
+stargazer(reg_sentiment_rt_v_1,reg_sentiment_rt_v_2,reg_sentiment_rt_v_3,type="text")
+
+reg_sentiment_comb_v_1 = lm(abnormal~0+csmg_pct+rtmg_pct+rtmg_num_positive+
+                            rtmg_num_neg+csmg_num_positive+csmg_num_neg+
+                            cs_pct+rt_pct+rt_num_positive+
+                            rt_num_neg+cs_num_positive+cs_num_neg,
+                          data=test_period_3_comb3,na.action = na.omit)
+
+reg_sentiment_comb_v_2 = lm(abnormal~0+rtmg_pct+rtmg_num_positive+
+                            rtmg_num_neg+csmg_num_positive+csmg_num_neg+
+                            cs_pct+rt_pct+rt_num_positive+
+                            rt_num_neg+cs_num_positive+cs_num_neg,
+                          data=test_period_3_comb3,na.action = na.omit)
+reg_sentiment_comb_v_3 = lm(abnormal~0+rtmg_pct+rtmg_num_positive+
+                            rtmg_num_neg+csmg_num_positive+csmg_num_neg+
+                            cs_pct+rt_pct+rt_num_positive+
+                            rt_num_neg+cs_num_positive,
+                          data=test_period_3_comb3,na.action = na.omit)
+
+reg_sentiment_comb_v_4 = lm(abnormal~0+rtmg_pct+rtmg_num_positive+
+                            rtmg_num_neg+csmg_num_positive+csmg_num_neg+
+                            cs_pct+rt_pct+rt_num_positive+cs_num_positive,
+                          data=test_period_3_comb3,na.action = na.omit)
+
+reg_sentiment_comb_v_5 = lm(abnormal~0+rtmg_pct+rtmg_num_positive+
+                            rtmg_num_neg+csmg_num_positive+csmg_num_neg+
+                            cs_pct+rt_pct+rt_num_positive+
+                            rt_num_neg,
+                          data=test_period_3_comb3,na.action = na.omit)
+
+reg_sentiment_comb_v_6 = lm(abnormal~0+rtmg_pct+rtmg_num_positive+
+                            rtmg_num_neg+csmg_num_positive+csmg_num_neg+
+                            cs_pct+rt_pct+rt_num_positive,
+                          data=test_period_3_comb3,na.action = na.omit)
+
+reg_sentiment_comb_v_7 = lm(abnormal~0+rtmg_pct+rtmg_num_positive+
+                            rtmg_num_neg+csmg_num_neg+
+                            cs_pct+rt_pct+rt_num_positive,
+                          data=test_period_3_comb3,na.action = na.omit)
+
+reg_sentiment_comb_v_8 = lm(abnormal~0+rtmg_pct+rtmg_num_positive+
+                            rtmg_num_neg+csmg_num_neg+
+                            cs_pct+rt_pct,
+                          data=test_period_3_comb3,na.action = na.omit)
+
+reg_sentiment_comb_v_9 = lm(abnormal~0+rtmg_num_positive+
+                            rtmg_num_neg+csmg_num_neg+
+                            cs_pct+rt_pct,
+                          data=test_period_3_comb3,na.action = na.omit)
+
+reg_sentiment_comb_v_10 = lm(abnormal~0+
+                             rtmg_num_neg+csmg_num_neg+
+                             cs_pct+rt_pct,
+                           data=test_period_3_comb3,na.action = na.omit)
+
+reg_sentiment_comb_v_11 = lm(abnormal~0+
+                             rtmg_num_neg+
+                             cs_pct+rt_pct,
+                           data=test_period_3_comb3,na.action = na.omit)
+
+reg_sentiment_comb_v_12 = lm(abnormal~0+
+                             rtmg_num_neg+csmg_num_neg+
+                             cs_pct,
+                           data=test_period_3_comb3,na.action = na.omit)
+summary(reg_sentiment_comb_v_9)
+stargazer(reg_sentiment_comb_v_1,reg_sentiment_comb_v_2,reg_sentiment_comb_v_3,
+          type = "text")
+stargazer(reg_sentiment_comb_v_4,reg_sentiment_comb_v_5,reg_sentiment_comb_v_6,
+          type = "text")
+stargazer(reg_sentiment_comb_v_7,reg_sentiment_comb_v_8,reg_sentiment_comb_v_9,
+          type = "text")
+stargazer(reg_sentiment_comb_v_10,reg_sentiment_comb_v_11,reg_sentiment_comb_v_12,
+          type = "text")
+####exhibition of result####
+stargazer(reg_mkt_cs,reg_mkt_rt,reg_mkt_comb1,reg_mkt_comb2,reg_mkt_comb3,title="Estimated Market Model",type = "text",covariate.labels = c("Beta Hat","Alpha Hat"))
+print(rbind(cs_coef_sw,rt_coef_sw,comb_1_sw,comb_2_sw,comb_3_sw))
+car
+car_sw
+total_t
+total_t_sw
+p_val
+p_val_sw
+
+stargazer(reg_sentiment_cs_1,reg_sentiment_cs_2,title="Sentiment Regression CS",type = "text",covariate.labels = c("CS # positive","cs # negative","cs pct positive"))
+summary(reg_sentiment_cs_v_2)
+stargazer(reg_sentiment_rt_1,reg_sentiment_rt_2,reg_sentiment_rt_3,title="Sentiment regression RT",type = "text",covariate.labels = c("RT # positive","rt # negative","rt pct positive"))
+summary(reg_sentiment_rt_2)
+stargazer(reg_sentiment_comb_1,reg_sentiment_comb_2,reg_sentiment_comb_3,
+          type = "text",title="Sentiment regression Combined, using abnormal return adjusted with S&W")
+stargazer(reg_sentiment_comb_4,reg_sentiment_comb_5,reg_sentiment_comb_6,
+          type = "text",title="Sentiment regression Combined, using abnormal return adjusted with S&W")
+stargazer(reg_sentiment_comb_7,reg_sentiment_comb_8,reg_sentiment_comb_9,
+          type = "text",title="Sentiment regression Combined, using abnormal return adjusted with S&W")
+stargazer(reg_sentiment_comb_10,reg_sentiment_comb_11,reg_sentiment_comb_12,
+          type = "text",title="Sentiment regression Combined, using abnormal return adjusted with S&W")
+summary(reg_sentiment_comb_8)
+
+stargazer(reg_sentiment_comb_v_1,reg_sentiment_comb_v_2,reg_sentiment_comb_v_3,
+          type = "text",title = "Sentiment regression Combined, using standard abnormal return")
+stargazer(reg_sentiment_comb_v_4,reg_sentiment_comb_v_5,reg_sentiment_comb_v_6,
+          type = "text",title = "Sentiment regression Combined, using standard abnormal return")
+stargazer(reg_sentiment_comb_v_7,reg_sentiment_comb_v_8,reg_sentiment_comb_v_9,
+          type = "text",title = "Sentiment regression Combined, using standard abnormal return")
+stargazer(reg_sentiment_comb_v_10,reg_sentiment_comb_v_11,reg_sentiment_comb_v_12,
+          type = "text",title = "Sentiment regression Combined, using standard abnormal return")
