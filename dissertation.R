@@ -5,6 +5,7 @@ require(stargazer)
 require(ggplot2)
 require(lmtest)
 require(dynlm)
+library(olsrr)
 stock_cs = read.csv("comscore.csv")
 stock_rt = read.csv("rentrak.csv")
 ####cut cs data with the same length of rt####
@@ -236,17 +237,17 @@ p_val =as.data.frame(
     cbind(
       pt((total_t[1,1]),nrow(test_period_1_cs),lower.tail = TRUE),
       pt((total_t[1,2]),nrow(test_period_1_rt),lower.tail = FALSE),
-      2*pt(-abs(total_t[1,3]),nrow(test_period_1_comb1))
+      pt((total_t[1,3]),nrow(test_period_1_comb1),lower.tail = FALSE)
     ),
     cbind(
       pt((total_t[2,1]),nrow(test_period_2_cs),lower.tail = TRUE),
       pt((total_t[2,2]),nrow(test_period_2_rt),lower.tail = FALSE),
-      2*pt(-abs(total_t[2,3]),nrow(test_period_2_comb2))
+      pt((total_t[2,3]),nrow(test_period_2_comb2),lower.tail = FALSE)
     ),
     cbind(
       pt((total_t[3,1]),nrow(test_period_3_cs),lower.tail = TRUE),
       pt((total_t[3,2]),nrow(test_period_3_rt),lower.tail = FALSE),
-      2*pt(-abs(total_t[3,3]),nrow(test_period_3_comb3))
+      pt((total_t[3,3]),nrow(test_period_3_comb3),lower.tail = FALSE)
     )
   ),row.names = c("test_period_1","test_period_2","test_period_3")
 )
@@ -453,22 +454,25 @@ p_val_sw =as.data.frame(
     cbind(
       pt((total_t_sw[1,1]),nrow(test_period_1_cs),lower.tail = TRUE),
       pt((total_t_sw[1,2]),nrow(test_period_1_rt),lower.tail = FALSE),
-      2*pt(-abs(total_t_sw[1,3]),nrow(test_period_1_comb1))
+      pt((total_t_sw[1,3]),nrow(test_period_1_comb1),lower.tail = FALSE)
     ),
     cbind(
       pt((total_t_sw[2,1]),nrow(test_period_2_cs),lower.tail = TRUE),
       pt((total_t_sw[2,2]),nrow(test_period_2_rt),lower.tail = FALSE),
-      2*pt(-abs(total_t_sw[2,3]),nrow(test_period_2_comb2))
+      pt((total_t_sw[2,3]),nrow(test_period_2_comb2),lower.tail = FALSE)
     ),
     cbind(
       pt(-abs(total_t_sw[3,1]),nrow(test_period_3_cs),lower.tail = TRUE),
       pt(-abs(total_t_sw[3,2]),nrow(test_period_3_rt),lower.tail = FALSE),
-      2*pt(-abs(total_t_sw[3,3]),nrow(test_period_3_comb3))
+      pt((total_t_sw[3,3]),nrow(test_period_3_comb3),lower.tail = FALSE)
     )
   ),row.names = c("test_period_1","test_period_2","test_period_3")
 )
 colnames(p_val_sw) = c("CS","RT","Combined")
 p_val_sw
+
+
+
 ####sentiment analysis reg####
 sentiment_cs = read.csv("day_sentiment_search_cs.csv")
 sentiment_cs_mg = read.csv("day_sentiment_merger_cs.csv")
@@ -649,159 +653,79 @@ colnames(sentiment_rt_mg)=c("date","rtmg_num_tweets","rtmg_num_positive","rtmg_p
 #period 3 cs
 test_period_3_cs=merge(test_period_3_cs,sentiment_cs,by = "date",all=TRUE)
 test_period_3_cs=merge(test_period_3_cs,sentiment_cs_mg,by="date",all=TRUE)
+test_period_3_cs=merge(test_period_3_cs,sentiment_rt_mg,by="date",all=TRUE)
+test_period_3_cs=merge(test_period_3_cs,sentiment_rt,by="date",all=TRUE)
 
 test_period_3_rt=merge(test_period_3_rt,sentiment_rt,by="date",all=TRUE)
 test_period_3_rt=merge(test_period_3_rt,sentiment_rt_mg,by="date",all=TRUE)
+test_period_3_rt=merge(test_period_3_rt,sentiment_cs,by="date",all=TRUE)
+test_period_3_rt=merge(test_period_3_rt,sentiment_cs_mg,by="date",all=TRUE)
+
 
 test_period_3_comb3=merge(test_period_3_comb3,sentiment_cs_mg,by="date",all=TRUE)
 test_period_3_comb3=merge(test_period_3_comb3,sentiment_cs,by="date",all=TRUE)
 test_period_3_comb3=merge(test_period_3_comb3,sentiment_rt,by="date",all=TRUE)
 test_period_3_comb3=merge(test_period_3_comb3,sentiment_rt_mg,by="date",all=TRUE)
 
-####backward elimination regression to find the best combination####
-reg_sentiment_cs_1=lm(abnormal_sw~0+cs_num_positive+cs_num_neg+cs_pct,
-                      data=test_period_3_cs,na.action=na.omit)
-reg_sentiment_cs_2=lm(abnormal_sw~0+cs_num_neg+cs_pct,
-                      data=test_period_3_cs,na.action=na.omit)
-stargazer(reg_sentiment_cs_1,reg_sentiment_cs_2,type = "text")
+####base regression + best subset to find the best combination####
 
-reg_sentiment_rt_1=lm(abnormal_sw~0+rt_num_positive+rt_num_neg+rt_pct,
-                    data=test_period_3_rt,na.action=na.omit)
-reg_sentiment_rt_2=lm(abnormal_sw~0+rt_num_neg+rt_pct,
-                      data=test_period_3_rt,na.action=na.omit)
-reg_sentiment_rt_3=lm(abnormal_sw~0+rt_num_neg,
-                      data=test_period_3_rt,na.action=na.omit)#decrease in R2, no good
-stargazer(reg_sentiment_rt_1,reg_sentiment_rt_2,reg_sentiment_rt_3,type="text")
-#combination
-# reg_sentiment_comb_1m = lm(abnormal_sw~0+csmg_pct+rtmg_pct+rtmg_num_positive+
-#                           rtmg_num_neg+csmg_num_positive+csmg_num_neg,
-#                         data=test_period_3_comb3,na.action = na.omit)
-# 
-# reg_sentiment_comb_2m = lm(abnormal_sw~0+csmg_pct+rtmg_pct+
-#                           rtmg_num_neg+csmg_num_positive+csmg_num_neg,
-#                         data=test_period_3_comb3,na.action = na.omit)
-# 
-# reg_sentiment_comb_3m = lm(abnormal_sw~0+csmg_pct+rtmg_pct+
-#                             rtmg_num_neg+csmg_num_neg,
-#                           data=test_period_3_comb3,na.action = na.omit)
-# 
-# reg_sentiment_comb_4m = lm(abnormal_sw~0+csmg_pct+
-#                             rtmg_num_neg+csmg_num_neg,
-#                           data=test_period_3_comb3,na.action = na.omit)
-# 
-# reg_sentiment_comb_5m = lm(abnormal_sw~0+csmg_pct+
-#                             rtmg_num_neg,
-#                           data=test_period_3_comb3,na.action = na.omit)
-# 
-# stargazer(reg_sentiment_comb_1m,reg_sentiment_comb_2m,reg_sentiment_comb_3m,reg_sentiment_comb_4m,reg_sentiment_comb_5m,type = "text")
+reg_sentiment_cs_0 = lm(abnormal_sw~0+csmg_pct+rtmg_pct+rtmg_num_positive+
+                          rtmg_num_neg+csmg_num_positive+csmg_num_neg+
+                          cs_pct+rt_pct+rt_num_positive+
+                          rt_num_neg+cs_num_positive+cs_num_neg,
+                        data = test_period_3_cs,
+                        na.action = na.omit)
 
-reg_sentiment_comb_1 = lm(abnormal_sw~0+csmg_pct+rtmg_pct+rtmg_num_positive+
-                             rtmg_num_neg+csmg_num_positive+csmg_num_neg+
-                            cs_pct+rt_pct+rt_num_positive+
-                            rt_num_neg+cs_num_positive+cs_num_neg,
-                           data=test_period_3_comb3,na.action = na.omit)
+ols_step_best_subset(reg_sentiment_cs_0)#rtmg_num_neg rt_pct
+#best regression for cs
+best_sentiment_cs = lm(abnormal_sw~0+rtmg_num_neg+rt_pct,data = test_period_3_cs,
+                       na.action = na.omit)
+ols_regress(best_sentiment_cs)
 
-reg_sentiment_comb_2 = lm(abnormal_sw~0+rtmg_pct+rtmg_num_positive+
+reg_sentiment_rt_0 = lm(abnormal_sw~0+csmg_pct+rtmg_pct+rtmg_num_positive+
+                          rtmg_num_neg+csmg_num_positive+csmg_num_neg+
+                          cs_pct+rt_pct+rt_num_positive+
+                          rt_num_neg+cs_num_positive+cs_num_neg,
+                        data = test_period_3_rt,
+                        na.action = na.omit)
+
+ols_step_best_subset(reg_sentiment_rt_0)#rtmg_pct cs_pct rt_pct rt_num_neg
+
+#best regression for rt 
+best_sentiment_rt = lm(abnormal_sw~0+rtmg_pct +cs_pct+ rt_pct+ rt_num_neg, 
+                       data=test_period_3_rt, na.action = na.omit)
+
+ols_regress(best_sentiment_rt)
+
+reg_sentiment_comb_0 = lm(abnormal_sw~0+csmg_pct+rtmg_pct+rtmg_num_positive+
                             rtmg_num_neg+csmg_num_positive+csmg_num_neg+
                             cs_pct+rt_pct+rt_num_positive+
                             rt_num_neg+cs_num_positive+cs_num_neg,
                           data=test_period_3_comb3,na.action = na.omit)
-reg_sentiment_comb_3 = lm(abnormal_sw~0+rtmg_pct+rtmg_num_positive+
-                            rtmg_num_neg+csmg_num_positive+csmg_num_neg+
-                            cs_pct+rt_pct+rt_num_positive+
-                            rt_num_neg+cs_num_positive,
-                          data=test_period_3_comb3,na.action = na.omit)
 
-reg_sentiment_comb_4 = lm(abnormal_sw~0+rtmg_pct+rtmg_num_positive+
-                            rtmg_num_neg+csmg_num_positive+csmg_num_neg+
-                            cs_pct+rt_pct+rt_num_positive+cs_num_positive,
-                          data=test_period_3_comb3,na.action = na.omit)
+ols_step_best_subset(reg_sentiment_comb_0)#rtmg_num_neg rt_pct 
 
-reg_sentiment_comb_5 = lm(abnormal_sw~0+rtmg_pct+rtmg_num_positive+
-                            rtmg_num_neg+csmg_num_positive+csmg_num_neg+
-                            cs_pct+rt_pct+rt_num_positive+
-                            rt_num_neg,
-                          data=test_period_3_comb3,na.action = na.omit)
-
-reg_sentiment_comb_6 = lm(abnormal_sw~0+rtmg_pct+rtmg_num_positive+
-                            rtmg_num_neg+csmg_num_positive+csmg_num_neg+
-                            cs_pct+rt_pct+rt_num_positive,
-                          data=test_period_3_comb3,na.action = na.omit)
-
-reg_sentiment_comb_7 = lm(abnormal_sw~0+rtmg_pct+rtmg_num_positive+
-                            rtmg_num_neg+csmg_num_neg+
-                            cs_pct+rt_pct+rt_num_positive,
-                          data=test_period_3_comb3,na.action = na.omit)
-
-reg_sentiment_comb_8 = lm(abnormal_sw~0+rtmg_pct+rtmg_num_positive+
-                            rtmg_num_neg+csmg_num_neg+
-                            cs_pct+rt_pct,
-                          data=test_period_3_comb3,na.action = na.omit)
-
-reg_sentiment_comb_9 = lm(abnormal_sw~0+rtmg_num_positive+
-                            rtmg_num_neg+csmg_num_neg+
-                            cs_pct+rt_pct,
-                          data=test_period_3_comb3,na.action = na.omit)
-
-reg_sentiment_comb_10 = lm(abnormal_sw~0+
-                            rtmg_num_neg+csmg_num_neg+
-                            cs_pct+rt_pct,
-                          data=test_period_3_comb3,na.action = na.omit)
-
-reg_sentiment_comb_11 = lm(abnormal_sw~0+
-                             rtmg_num_neg+
-                             cs_pct+rt_pct,
-                           data=test_period_3_comb3,na.action = na.omit)
-
-reg_sentiment_comb_12 = lm(abnormal_sw~0+
-                             rtmg_num_neg+csmg_num_neg+
-                             cs_pct,
-                           data=test_period_3_comb3,na.action = na.omit)
-
-stargazer(reg_sentiment_comb_1,reg_sentiment_comb_2,reg_sentiment_comb_3,
-          type = "text")
-stargazer(reg_sentiment_comb_4,reg_sentiment_comb_5,reg_sentiment_comb_6,
-          type = "text")
-stargazer(reg_sentiment_comb_7,reg_sentiment_comb_8,reg_sentiment_comb_9,
-          type = "text")
-stargazer(reg_sentiment_comb_10,reg_sentiment_comb_11,reg_sentiment_comb_12,
-          type = "text")
-#model 8 is the best 
-summary(reg_sentiment_comb_8)
-
-# tried using the full sample observation, but low R2
-# reg_comb_full_1=lm(abnormal_sw~0+cs_pct+rt_pct+cs_num_neg+rt_num_neg+rt_num_positive+cs_num_positive,
-#                    data = test_period_3_comb3)
-# 
-# reg_comb_full_2=lm(abnormal_sw~0+cs_pct+rt_pct+cs_num_neg+rt_num_neg+cs_num_positive,
-#                    data = test_period_3_comb3)
-# 
-# reg_comb_full_3=lm(abnormal_sw~0+cs_pct+cs_num_neg+rt_num_neg+cs_num_positive,
-#                    data = test_period_3_comb3)
-# reg_comb_full_4=lm(abnormal_sw~0+cs_pct+cs_num_neg+rt_num_neg,
-#                    data = test_period_3_comb3)
-# 
-# reg_comb_full_5=lm(abnormal_sw~0+cs_pct+rt_num_neg,
-#                    data = test_period_3_comb3)
-# 
-# summary(reg_comb_full_5)
+best_sentiment_comb = lm(abnormal_sw~0+rtmg_num_neg+rt_pct, data = test_period_3_comb3,
+                         na.action = na.omit)
+ols_regress(best_sentiment_comb)
 
 ####Hetroskedasticity test####
 #if reject then hetro present
-bptest(reg_sentiment_cs_2)#don't reject, no Hetroskedasticity 
-bptest(reg_sentiment_rt_2)#don't reject, no Hetroskedasticity
-bptest(reg_sentiment_comb_8)#reject, present
+bptest(best_sentiment_cs)#don't reject, no Hetroskedasticity 
+bptest(best_sentiment_rt)#reject, present
+bptest(best_sentiment_comb)#don't reject, no Hetroskedasticity 
 
 #adjust for Hetroskedasticity in the last model
-coeftest(reg_sentiment_comb_8,vcov. = vcovHC(reg_sentiment_comb_8,"HC1"))#HC1 is the white standard errors
+coeftest(best_sentiment_rt,vcov. = vcovHC(best_sentiment_rt,"HC1"))#HC1 is the white standard errors
+
 ####Ramsy reset test####
-resettest(reg_sentiment_comb_8)
-resettest(reg_sentiment_cs_2)
-resettest(reg_sentiment_rt_2) #all pass
+resettest(best_sentiment_cs)
+resettest(best_sentiment_rt)
+resettest(best_sentiment_comb) #all pass
 ####auto correlation test####
-bgtest(reg_sentiment_comb_8,order = 5)
-bgtest(reg_sentiment_cs_2,order = 5)
-bgtest(reg_sentiment_rt_2,order = 5) #all pass
+bgtest(best_sentiment_cs,order = 5)
+bgtest(best_sentiment_rt,order = 5)
+bgtest(best_sentiment_comb,order = 5) #all pass
 
 ###store the test_period in csv###
 # write.csv(test_period_1_comb1,"st_result\\test_period_1_comb1.csv", row.names = FALSE)
@@ -816,92 +740,7 @@ bgtest(reg_sentiment_rt_2,order = 5) #all pass
 # write.csv(test_period_3_cs,"st_result\\test_period_3_cs.csv", row.names = FALSE)
 # write.csv(test_period_3_rt,"st_result\\test_period_3_rt.csv", row.names = FALSE)
 
-####sentiment regress on pure abnormal return####
-reg_sentiment_cs_v_1=lm(abnormal~0+cs_num_positive+cs_num_neg+cs_pct,
-                      data=test_period_3_cs,na.action=na.omit)
-reg_sentiment_cs_v_2=lm(abnormal~0+cs_num_neg+cs_pct,
-                      data=test_period_3_cs,na.action=na.omit)
-stargazer(reg_sentiment_cs_v_1,reg_sentiment_cs_v_2,type = "text")
 
-reg_sentiment_rt_v_1=lm(abnormal~0+rt_num_positive+rt_num_neg+rt_pct,
-                      data=test_period_3_rt,na.action=na.omit)
-reg_sentiment_rt_v_2=lm(abnormal~0+rt_num_neg+rt_pct,
-                      data=test_period_3_rt,na.action=na.omit)
-reg_sentiment_rt_v_3=lm(abnormal~0+rt_num_neg,
-                      data=test_period_3_rt,na.action=na.omit)#decrease in R2, no good
-stargazer(reg_sentiment_rt_v_1,reg_sentiment_rt_v_2,reg_sentiment_rt_v_3,type="text")
-
-reg_sentiment_comb_v_1 = lm(abnormal~0+csmg_pct+rtmg_pct+rtmg_num_positive+
-                            rtmg_num_neg+csmg_num_positive+csmg_num_neg+
-                            cs_pct+rt_pct+rt_num_positive+
-                            rt_num_neg+cs_num_positive+cs_num_neg,
-                          data=test_period_3_comb3,na.action = na.omit)
-
-reg_sentiment_comb_v_2 = lm(abnormal~0+rtmg_pct+rtmg_num_positive+
-                            rtmg_num_neg+csmg_num_positive+csmg_num_neg+
-                            cs_pct+rt_pct+rt_num_positive+
-                            rt_num_neg+cs_num_positive+cs_num_neg,
-                          data=test_period_3_comb3,na.action = na.omit)
-reg_sentiment_comb_v_3 = lm(abnormal~0+rtmg_pct+rtmg_num_positive+
-                            rtmg_num_neg+csmg_num_positive+csmg_num_neg+
-                            cs_pct+rt_pct+rt_num_positive+
-                            rt_num_neg+cs_num_positive,
-                          data=test_period_3_comb3,na.action = na.omit)
-
-reg_sentiment_comb_v_4 = lm(abnormal~0+rtmg_pct+rtmg_num_positive+
-                            rtmg_num_neg+csmg_num_positive+csmg_num_neg+
-                            cs_pct+rt_pct+rt_num_positive+cs_num_positive,
-                          data=test_period_3_comb3,na.action = na.omit)
-
-reg_sentiment_comb_v_5 = lm(abnormal~0+rtmg_pct+rtmg_num_positive+
-                            rtmg_num_neg+csmg_num_positive+csmg_num_neg+
-                            cs_pct+rt_pct+rt_num_positive+
-                            rt_num_neg,
-                          data=test_period_3_comb3,na.action = na.omit)
-
-reg_sentiment_comb_v_6 = lm(abnormal~0+rtmg_pct+rtmg_num_positive+
-                            rtmg_num_neg+csmg_num_positive+csmg_num_neg+
-                            cs_pct+rt_pct+rt_num_positive,
-                          data=test_period_3_comb3,na.action = na.omit)
-
-reg_sentiment_comb_v_7 = lm(abnormal~0+rtmg_pct+rtmg_num_positive+
-                            rtmg_num_neg+csmg_num_neg+
-                            cs_pct+rt_pct+rt_num_positive,
-                          data=test_period_3_comb3,na.action = na.omit)
-
-reg_sentiment_comb_v_8 = lm(abnormal~0+rtmg_pct+rtmg_num_positive+
-                            rtmg_num_neg+csmg_num_neg+
-                            cs_pct+rt_pct,
-                          data=test_period_3_comb3,na.action = na.omit)
-
-reg_sentiment_comb_v_9 = lm(abnormal~0+rtmg_num_positive+
-                            rtmg_num_neg+csmg_num_neg+
-                            cs_pct+rt_pct,
-                          data=test_period_3_comb3,na.action = na.omit)
-
-reg_sentiment_comb_v_10 = lm(abnormal~0+
-                             rtmg_num_neg+csmg_num_neg+
-                             cs_pct+rt_pct,
-                           data=test_period_3_comb3,na.action = na.omit)
-
-reg_sentiment_comb_v_11 = lm(abnormal~0+
-                             rtmg_num_neg+
-                             cs_pct+rt_pct,
-                           data=test_period_3_comb3,na.action = na.omit)
-
-reg_sentiment_comb_v_12 = lm(abnormal~0+
-                             rtmg_num_neg+csmg_num_neg+
-                             cs_pct,
-                           data=test_period_3_comb3,na.action = na.omit)
-summary(reg_sentiment_comb_v_9)
-stargazer(reg_sentiment_comb_v_1,reg_sentiment_comb_v_2,reg_sentiment_comb_v_3,
-          type = "text")
-stargazer(reg_sentiment_comb_v_4,reg_sentiment_comb_v_5,reg_sentiment_comb_v_6,
-          type = "text")
-stargazer(reg_sentiment_comb_v_7,reg_sentiment_comb_v_8,reg_sentiment_comb_v_9,
-          type = "text")
-stargazer(reg_sentiment_comb_v_10,reg_sentiment_comb_v_11,reg_sentiment_comb_v_12,
-          type = "text")
 ####exhibition of result####
 stargazer(reg_mkt_cs,reg_mkt_rt,reg_mkt_comb1,reg_mkt_comb2,reg_mkt_comb3,title="Estimated Market Model",type = "text",covariate.labels = c("Beta Hat","Alpha Hat"))
 print(rbind(cs_coef_sw,rt_coef_sw,comb_1_sw,comb_2_sw,comb_3_sw))
@@ -912,25 +751,60 @@ total_t_sw
 p_val
 p_val_sw
 
-stargazer(reg_sentiment_cs_1,reg_sentiment_cs_2,title="Sentiment Regression CS",type = "text",covariate.labels = c("CS # positive","cs # negative","cs pct positive"))
-summary(reg_sentiment_cs_v_2)
-stargazer(reg_sentiment_rt_1,reg_sentiment_rt_2,reg_sentiment_rt_3,title="Sentiment regression RT",type = "text",covariate.labels = c("RT # positive","rt # negative","rt pct positive"))
-summary(reg_sentiment_rt_2)
-stargazer(reg_sentiment_comb_1,reg_sentiment_comb_2,reg_sentiment_comb_3,
-          type = "text",title="Sentiment regression Combined, using abnormal return adjusted with S&W")
-stargazer(reg_sentiment_comb_4,reg_sentiment_comb_5,reg_sentiment_comb_6,
-          type = "text",title="Sentiment regression Combined, using abnormal return adjusted with S&W")
-stargazer(reg_sentiment_comb_7,reg_sentiment_comb_8,reg_sentiment_comb_9,
-          type = "text",title="Sentiment regression Combined, using abnormal return adjusted with S&W")
-stargazer(reg_sentiment_comb_10,reg_sentiment_comb_11,reg_sentiment_comb_12,
-          type = "text",title="Sentiment regression Combined, using abnormal return adjusted with S&W")
-summary(reg_sentiment_comb_8)
 
-stargazer(reg_sentiment_comb_v_1,reg_sentiment_comb_v_2,reg_sentiment_comb_v_3,
-          type = "text",title = "Sentiment regression Combined, using standard abnormal return")
-stargazer(reg_sentiment_comb_v_4,reg_sentiment_comb_v_5,reg_sentiment_comb_v_6,
-          type = "text",title = "Sentiment regression Combined, using standard abnormal return")
-stargazer(reg_sentiment_comb_v_7,reg_sentiment_comb_v_8,reg_sentiment_comb_v_9,
-          type = "text",title = "Sentiment regression Combined, using standard abnormal return")
-stargazer(reg_sentiment_comb_v_10,reg_sentiment_comb_v_11,reg_sentiment_comb_v_12,
-          type = "text",title = "Sentiment regression Combined, using standard abnormal return")
+####extra: what if we regress sentiment on abnormal return unadjusted by s&w?####
+reg_sentiment_cs_1 = lm(abnormal~0+csmg_pct+rtmg_pct+rtmg_num_positive+
+                          rtmg_num_neg+csmg_num_positive+csmg_num_neg+
+                          cs_pct+rt_pct+rt_num_positive+
+                          rt_num_neg+cs_num_positive+cs_num_neg,
+                        data = test_period_3_cs,
+                        na.action = na.omit)
+
+ols_step_best_subset(reg_sentiment_cs_1)#rtmg_num_neg rt_pct
+#best regression for cs
+best_sentiment_cs_1 = lm(abnormal~0+rtmg_num_neg+rt_pct,data = test_period_3_cs,
+                       na.action = na.omit)
+ols_regress(best_sentiment_cs_1)
+
+reg_sentiment_rt_1 = lm(abnormal~0+csmg_pct+rtmg_pct+rtmg_num_positive+
+                          rtmg_num_neg+csmg_num_positive+csmg_num_neg+
+                          cs_pct+rt_pct+rt_num_positive+
+                          rt_num_neg+cs_num_positive+cs_num_neg,
+                        data = test_period_3_rt,
+                        na.action = na.omit)
+
+ols_step_best_subset(reg_sentiment_rt_1)#rtmg_pct rt_pct rt_num_neg
+
+#best regression for rt 
+best_sentiment_rt_1 = lm(abnormal~0+rtmg_pct +rt_pct+ rt_num_neg, 
+                       data=test_period_3_rt, na.action = na.omit)
+
+ols_regress(best_sentiment_rt_1)
+
+reg_sentiment_comb_1 = lm(abnormal~0+csmg_pct+rtmg_pct+rtmg_num_positive+
+                            rtmg_num_neg+csmg_num_positive+csmg_num_neg+
+                            cs_pct+rt_pct+rt_num_positive+
+                            rt_num_neg+cs_num_positive+cs_num_neg,
+                          data=test_period_3_comb3,na.action = na.omit)
+
+ols_step_best_subset(reg_sentiment_comb_1)#rtmg_num_neg rt_pct 
+
+best_sentiment_comb_1 = lm(abnormal~0+rtmg_num_neg+rt_pct, data = test_period_3_comb3,
+                         na.action = na.omit)
+ols_regress(best_sentiment_comb)
+
+bptest(best_sentiment_cs_1)#don't reject, no Hetroskedasticity 
+bptest(best_sentiment_rt_1)#reject, present
+bptest(best_sentiment_comb_1)#don't reject, no Hetroskedasticity 
+
+#adjust for Hetroskedasticity in the last model
+coeftest(best_sentiment_rt,vcov. = vcovHC(best_sentiment_rt_1,"HC1"))#HC1 is the white standard errors
+
+####Ramsy reset test####
+resettest(best_sentiment_cs_1)
+resettest(best_sentiment_rt_1)
+resettest(best_sentiment_comb_1) #all pass
+####auto correlation test####
+bgtest(best_sentiment_cs_1,order = 5)
+bgtest(best_sentiment_rt_1,order = 5)
+bgtest(best_sentiment_comb_1,order = 5) #all pass
