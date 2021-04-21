@@ -1,4 +1,4 @@
-# Dissertation 
+ # Dissertation 
 This is a repo for my undergrade dissertation, the twitter scrape part is from https://github.com/israel-dryer/Twitter-Scraper/blob/main/twitter_scraper.py with some adjustment to fit my poor internet connection, and the delta tf-idf is based on https://kgptalkie.com/amazon-and-imdb-review-sentiment-classification-using-spacy/. 
 
 In order to run the code, in addition to download the code and have a working python environment with all the packages required, you need to have a selenium webdriver properly setup in your computer. In order to do that you can follow this link: https://selenium-python.readthedocs.io/installation.html, or video https://www.youtube.com/watch?v=9XAH_TvxwLg&t=29s
@@ -23,3 +23,4 @@ then I trained Delta TF-IDF model, the table for prediction accuracy will have t
 then i use the trained algo to predict sentiments on actual tweet, and aggregate them on a daily frequency, result in folder /df_res
 
 And that is pretty much it, let me know anything i can help by writing issue in github. 
+
