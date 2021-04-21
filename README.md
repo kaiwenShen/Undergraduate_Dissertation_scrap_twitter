@@ -22,4 +22,4 @@ then I trained Delta TF-IDF model, the table for prediction accuracy will have t
 
 then i use the trained algo to predict sentiments on actual tweet, and aggregate them on a daily frequency, result in folder /df_res
 
-and that is pretty much it, let me know anything i can help. 
+And that is pretty much it, let me know anything i can help by writing issue in github. 
