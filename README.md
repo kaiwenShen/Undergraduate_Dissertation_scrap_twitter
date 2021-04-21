@@ -14,7 +14,7 @@ make sure the R code and these file are under the same root when you run the cod
 
 in ***st_res folder*** is the dataframe result of the data, only particularly for the event study intermediary process, if examiner wishes to check other computational data such as CAR, Patell Z, p value, then running R is required. In the final Section of R code, I marked each table with specific code you can run.
 
-#Sentiment Analysis
+# Sentiment Analysis
 
 I first scrape the twitter within [-1, 85] days, and the scraped tweets is in /twitter folder. 
 
