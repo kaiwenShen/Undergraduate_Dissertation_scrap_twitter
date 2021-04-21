@@ -7,6 +7,19 @@ you also need a working twitter account & password, as suggested in the python s
 Also,the twitter folder already have the scraped raw tweets, and the df_res folder already have the sentiment analysis result processed, the twitter search key words are "Comscore", "Rentrak", "Comscore Merger", "Rentrak Merger". 
 
 # Short-term event study methodology
+
 The comscore.csv and rentrak.csv are the data collected from WRDS CRSP 
+
 make sure the R code and these file are under the same root when you run the code
-in ***st_res folder*** is the dataframe result of the data
+
+in ***st_res folder*** is the dataframe result of the data, only particularly for the event study intermediary process, if examiner wishes to check other computational data such as CAR, Patell Z, p value, then running R is required. In the final Section of R code, I marked each table with specific code you can run.
+
+#Sentiment Analysis
+
+I first scrape the twitter within [-1, 85] days, and the scraped tweets is in /twitter folder. 
+
+then I trained Delta TF-IDF model, the table for prediction accuracy will have to be obtained by running the actural python code, and the training dataset is in folder /datasets
+
+then i use the trained algo to predict sentiments on actual tweet, and aggregate them on a daily frequency, result in folder /df_res
+
+and that is pretty much it, let me know anything i can help. 
