@@ -1,4 +1,6 @@
-setwd("C:/Users/kevin/Desktop/uni_of_zoom/Emperical_Finance")
+# This is my R code for dissertation, if you are viewing this as an examiner, 
+# please run all the code and look at the final section for the data source of each table.  
+setwd("your working directory")
 require(AER)
 require(car)
 require(stargazer)
@@ -710,6 +712,7 @@ best_sentiment_comb = lm(abnormal_sw~0+rtmg_num_neg+rt_pct, data = test_period_3
 ols_regress(best_sentiment_comb)
 
 ####Hetroskedasticity test####
+
 #if reject then hetro present
 bptest(best_sentiment_cs)#don't reject, no Hetroskedasticity 
 bptest(best_sentiment_rt)#reject, present
@@ -718,7 +721,7 @@ bptest(best_sentiment_comb)#don't reject, no Hetroskedasticity
 #adjust for Hetroskedasticity in the last model
 coeftest(best_sentiment_rt,vcov. = vcovHC(best_sentiment_rt,"HC1"))#HC1 is the white standard errors
 
-####Ramsy reset test####
+####Ramsy RESET test####
 resettest(best_sentiment_cs)
 resettest(best_sentiment_rt)
 resettest(best_sentiment_comb) #all pass
@@ -741,9 +744,14 @@ bgtest(best_sentiment_comb,order = 5) #all pass
 # write.csv(test_period_3_rt,"st_result\\test_period_3_rt.csv", row.names = FALSE)
 
 
-####exhibition of result####
+####for examiner to check the data#### 
+
+# section 6.1 table 1 is purely calculated by hand. 
+# section 6.2 table 2,3,4 are in python code
+# section 7.1 table 5
 stargazer(reg_mkt_cs,reg_mkt_rt,reg_mkt_comb1,reg_mkt_comb2,reg_mkt_comb3,title="Estimated Market Model",type = "text",covariate.labels = c("Beta Hat","Alpha Hat"))
 print(rbind(cs_coef_sw,rt_coef_sw,comb_1_sw,comb_2_sw,comb_3_sw))
+# section 7.1 table 6
 car
 car_sw
 total_t
@@ -751,60 +759,47 @@ total_t_sw
 p_val
 p_val_sw
 
-
-####extra: what if we regress sentiment on abnormal return unadjusted by s&w?####
-reg_sentiment_cs_1 = lm(abnormal~0+csmg_pct+rtmg_pct+rtmg_num_positive+
-                          rtmg_num_neg+csmg_num_positive+csmg_num_neg+
-                          cs_pct+rt_pct+rt_num_positive+
-                          rt_num_neg+cs_num_positive+cs_num_neg,
-                        data = test_period_3_cs,
-                        na.action = na.omit)
-
-ols_step_best_subset(reg_sentiment_cs_1)#rtmg_num_neg rt_pct
-#best regression for cs
-best_sentiment_cs_1 = lm(abnormal~0+rtmg_num_neg+rt_pct,data = test_period_3_cs,
-                       na.action = na.omit)
-ols_regress(best_sentiment_cs_1)
-
-reg_sentiment_rt_1 = lm(abnormal~0+csmg_pct+rtmg_pct+rtmg_num_positive+
-                          rtmg_num_neg+csmg_num_positive+csmg_num_neg+
-                          cs_pct+rt_pct+rt_num_positive+
-                          rt_num_neg+cs_num_positive+cs_num_neg,
-                        data = test_period_3_rt,
-                        na.action = na.omit)
-
-ols_step_best_subset(reg_sentiment_rt_1)#rtmg_pct rt_pct rt_num_neg
-
-#best regression for rt 
-best_sentiment_rt_1 = lm(abnormal~0+rtmg_pct +rt_pct+ rt_num_neg, 
-                       data=test_period_3_rt, na.action = na.omit)
-
-ols_regress(best_sentiment_rt_1)
-
-reg_sentiment_comb_1 = lm(abnormal~0+csmg_pct+rtmg_pct+rtmg_num_positive+
-                            rtmg_num_neg+csmg_num_positive+csmg_num_neg+
-                            cs_pct+rt_pct+rt_num_positive+
-                            rt_num_neg+cs_num_positive+cs_num_neg,
-                          data=test_period_3_comb3,na.action = na.omit)
-
-ols_step_best_subset(reg_sentiment_comb_1)#rtmg_num_neg rt_pct 
-
-best_sentiment_comb_1 = lm(abnormal~0+rtmg_num_neg+rt_pct, data = test_period_3_comb3,
-                         na.action = na.omit)
-ols_regress(best_sentiment_comb)
-
-bptest(best_sentiment_cs_1)#don't reject, no Hetroskedasticity 
-bptest(best_sentiment_rt_1)#reject, present
-bptest(best_sentiment_comb_1)#don't reject, no Hetroskedasticity 
-
-#adjust for Hetroskedasticity in the last model
-coeftest(best_sentiment_rt,vcov. = vcovHC(best_sentiment_rt_1,"HC1"))#HC1 is the white standard errors
-
-####Ramsy reset test####
-resettest(best_sentiment_cs_1)
-resettest(best_sentiment_rt_1)
-resettest(best_sentiment_comb_1) #all pass
-####auto correlation test####
-bgtest(best_sentiment_cs_1,order = 5)
-bgtest(best_sentiment_rt_1,order = 5)
-bgtest(best_sentiment_comb_1,order = 5) #all pass
+#section 7.2
+rbind(
+  cbind(
+    sum(sentiment_cs$cs_num_tweets),
+    sum(sentiment_rt$rt_num_tweets),
+    sum(sentiment_cs_mg$csmg_num_tweets,na.rm = TRUE),
+    sum(sentiment_rt_mg$rtmg_num_tweets,na.rm = TRUE)
+  ),
+  cbind(
+    sum(sentiment_cs$cs_num_positive),
+    sum(sentiment_rt$rt_num_positive),
+    sum(sentiment_cs_mg$csmg_num_positive,na.rm = TRUE),
+    sum(sentiment_rt_mg$rtmg_num_positive,na.rm = TRUE)
+  ),
+  cbind(
+    sum(sentiment_cs$cs_num_neg),
+    sum(sentiment_rt$rt_num_neg),
+    sum(sentiment_cs_mg$csmg_num_neg,na.rm = TRUE),
+    sum(sentiment_rt_mg$rtmg_num_neg,na.rm = TRUE)
+  ),
+  cbind(
+    mean(sentiment_cs$cs_num_tweets),
+    mean(sentiment_rt$rt_num_tweets),
+    mean(sentiment_cs_mg$csmg_num_tweets,na.rm = TRUE),
+    mean(sentiment_rt_mg$rtmg_num_tweets,na.rm = TRUE)
+  ),
+  cbind(
+    mean(sentiment_cs$cs_num_positive),
+    mean(sentiment_rt$rt_num_positive),
+    mean(sentiment_cs_mg$csmg_num_positive,na.rm = TRUE),
+    mean(sentiment_rt_mg$rtmg_num_positive,na.rm = TRUE)
+  ),
+  cbind(
+    mean(sentiment_cs$cs_num_neg),
+    mean(sentiment_rt$rt_num_neg),
+    mean(sentiment_cs_mg$csmg_num_neg,na.rm = TRUE),
+    mean(sentiment_rt_mg$rtmg_num_neg,na.rm = TRUE)
+  )
+)
+#section 7.2 table 8
+#this may take a while.
+ols_step_best_subset(reg_sentiment_cs_0)
+ols_step_best_subset(reg_sentiment_rt_0)
+ols_step_best_subset(reg_sentiment_comb_0)
