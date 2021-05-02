@@ -1,7 +1,7 @@
 # This is my R code for dissertation, if you are viewing this as an examiner, 
 # please run all the code and look at the final section for the data source of each table.  
 setwd("your working directory")
-require(AER)
+(AER)
 require(car)
 require(stargazer)
 require(ggplot2)
@@ -47,10 +47,10 @@ combine_1 = as.data.frame(
   cbind(
     stock_cs$date,
     stock_cs$RET*cs_weight_neg2+stock_rt$RET*rt_weight_neg2,
-    stock_cs$sprtrn
+    stock_cs$vwretd
   )
 )
-colnames(combine_1)=c("date","RET","sprtrn")
+colnames(combine_1)=c("date","RET","vwretd")
 
 est_period_comb1=subset(combine_1, combine_1$date>=20140909 & combine_1$date<20150904)
 test_period_1_comb1 = subset(combine_1, combine_1$date>=20150929 & combine_1$date<=20151001)
@@ -62,10 +62,10 @@ combine_2=as.data.frame(
   cbind(
     stock_cs$date,
     stock_cs$RET*cs_weight_neg6+stock_rt$RET*rt_weight_neg6,
-    stock_cs$sprtrn
+    stock_cs$vwretd
   )
 )
-colnames(combine_2)=c("date","RET","sprtrn")
+colnames(combine_2)=c("date","RET","vwretd")
 
 est_period_comb2=subset(combine_2, combine_2$date>=20140909 & combine_2$date<20150904)
 test_period_2_comb2 = subset(combine_2, combine_2$date>=20150923 & combine_2$date<=20151007)
@@ -75,25 +75,25 @@ combine_3=combine_1
 est_period_comb3=est_period_comb1
 test_period_3_comb3=subset(combine_3, combine_3$date>=20150929 & combine_3$date<=20160129)
 ####vanilla regression####
-reg_mkt_cs = lm(RET~sprtrn,data = est_period_cs)
-reg_mkt_rt = lm(RET~sprtrn,data = est_period_rt)
-reg_mkt_comb1 = lm(RET~sprtrn,data = est_period_comb1)
-reg_mkt_comb2 = lm(RET~sprtrn,data = est_period_comb2)
+reg_mkt_cs = lm(RET~vwretd,data = est_period_cs)
+reg_mkt_rt = lm(RET~vwretd,data = est_period_rt)
+reg_mkt_comb1 = lm(RET~vwretd,data = est_period_comb1)
+reg_mkt_comb2 = lm(RET~vwretd,data = est_period_comb2)
 reg_mkt_comb3 = reg_mkt_comb1#same data,same regression 
 stargazer(reg_mkt_cs,reg_mkt_rt,reg_mkt_comb1,reg_mkt_comb2,reg_mkt_comb3,type = "text")
 
 #compute test_period_1 model expectation
-test_period_1_cs$mkt_model_exp = reg_mkt_cs$coefficients[1]+reg_mkt_cs$coefficients[2]*test_period_1_cs$sprtrn
-test_period_1_rt$mkt_model_exp = reg_mkt_rt$coefficients[1]+reg_mkt_rt$coefficients[2]*test_period_1_rt$sprtrn
-test_period_1_comb1$mkt_model_exp = reg_mkt_comb1$coefficients[1]+reg_mkt_comb1$coefficients[2]*test_period_1_comb1$sprtrn
+test_period_1_cs$mkt_model_exp = reg_mkt_cs$coefficients[1]+reg_mkt_cs$coefficients[2]*test_period_1_cs$vwretd
+test_period_1_rt$mkt_model_exp = reg_mkt_rt$coefficients[1]+reg_mkt_rt$coefficients[2]*test_period_1_rt$vwretd
+test_period_1_comb1$mkt_model_exp = reg_mkt_comb1$coefficients[1]+reg_mkt_comb1$coefficients[2]*test_period_1_comb1$vwretd
 #compute test_period_2 model expectation
-test_period_2_cs$mkt_model_exp = reg_mkt_cs$coefficients[1]+reg_mkt_cs$coefficients[2]*test_period_2_cs$sprtrn
-test_period_2_rt$mkt_model_exp = reg_mkt_rt$coefficients[1]+reg_mkt_rt$coefficients[2]*test_period_2_rt$sprtrn
-test_period_2_comb2$mkt_model_exp = reg_mkt_comb2$coefficients[1]+reg_mkt_comb2$coefficients[2]*test_period_2_comb2$sprtrn
+test_period_2_cs$mkt_model_exp = reg_mkt_cs$coefficients[1]+reg_mkt_cs$coefficients[2]*test_period_2_cs$vwretd
+test_period_2_rt$mkt_model_exp = reg_mkt_rt$coefficients[1]+reg_mkt_rt$coefficients[2]*test_period_2_rt$vwretd
+test_period_2_comb2$mkt_model_exp = reg_mkt_comb2$coefficients[1]+reg_mkt_comb2$coefficients[2]*test_period_2_comb2$vwretd
 #compute test_period_3 model expectation
-test_period_3_cs$mkt_model_exp = reg_mkt_cs$coefficients[1]+reg_mkt_cs$coefficients[2]*test_period_3_cs$sprtrn
-test_period_3_rt$mkt_model_exp = reg_mkt_rt$coefficients[1]+reg_mkt_rt$coefficients[2]*test_period_3_rt$sprtrn
-test_period_3_comb3$mkt_model_exp = reg_mkt_comb3$coefficients[1]+reg_mkt_comb3$coefficients[2]*test_period_3_comb3$sprtrn
+test_period_3_cs$mkt_model_exp = reg_mkt_cs$coefficients[1]+reg_mkt_cs$coefficients[2]*test_period_3_cs$vwretd
+test_period_3_rt$mkt_model_exp = reg_mkt_rt$coefficients[1]+reg_mkt_rt$coefficients[2]*test_period_3_rt$vwretd
+test_period_3_comb3$mkt_model_exp = reg_mkt_comb3$coefficients[1]+reg_mkt_comb3$coefficients[2]*test_period_3_comb3$vwretd
 
 #compute abnormal return 
 test_period_1_cs$abnormal = test_period_1_cs$RET - test_period_1_cs$mkt_model_exp
@@ -134,7 +134,7 @@ car
 patell_inrow = function(abnormal_return,test_mkt_return,est_data,reg_residuals){
   obs = nrow(est_data)
   se = sqrt((1/(obs-2))*sum(reg_residuals^2))
-  c = 1+1/obs+(test_mkt_return - mean(est_data$sprtrn))^2/(var(est_data$sprtrn))
+  c = 1+1/obs+(test_mkt_return - mean(est_data$vwretd))^2/(var(est_data$vwretd))
   v = abnormal_return/(se*sqrt(c))
   return (v)
 }
@@ -143,7 +143,7 @@ patell_inrow = function(abnormal_return,test_mkt_return,est_data,reg_residuals){
 t_1_cs = sum(
   patell_inrow(
     test_period_1_cs$abnormal,
-    test_period_1_cs$sprtrn,
+    test_period_1_cs$vwretd,
     est_period_cs,
     reg_mkt_cs$residuals
   )
@@ -152,7 +152,7 @@ t_1_cs = sum(
 t_1_rt = sum(
   patell_inrow(
     test_period_1_rt$abnormal,
-    test_period_1_rt$sprtrn,
+    test_period_1_rt$vwretd,
     est_period_rt,
     reg_mkt_rt$residuals
   )
@@ -161,7 +161,7 @@ t_1_rt = sum(
 t_1_comb1 = sum(
   patell_inrow(
     test_period_1_comb1$abnormal,
-    test_period_1_comb1$sprtrn,
+    test_period_1_comb1$vwretd,
     est_period_comb1,
     reg_mkt_comb1$residuals
   )
@@ -172,7 +172,7 @@ t_1=cbind(t_1_cs,t_1_rt,t_1_comb1)
 t_2_cs = sum(
   patell_inrow(
     test_period_2_cs$abnormal,
-    test_period_2_cs$sprtrn,
+    test_period_2_cs$vwretd,
     est_period_cs,
     reg_mkt_cs$residuals
   )
@@ -181,7 +181,7 @@ t_2_cs = sum(
 t_2_rt = sum(
   patell_inrow(
     test_period_2_rt$abnormal,
-    test_period_2_rt$sprtrn,
+    test_period_2_rt$vwretd,
     est_period_rt,
     reg_mkt_rt$residuals
   )
@@ -190,7 +190,7 @@ t_2_rt = sum(
 t_2_comb2 = sum(
   patell_inrow(
     test_period_2_comb2$abnormal,
-    test_period_2_comb2$sprtrn,
+    test_period_2_comb2$vwretd,
     est_period_comb2,
     reg_mkt_comb2$residuals
   )
@@ -201,7 +201,7 @@ t_2=cbind(t_2_cs,t_2_rt,t_2_comb2)
 t_3_cs = sum(
   patell_inrow(
     test_period_3_cs$abnormal,
-    test_period_3_cs$sprtrn,
+    test_period_3_cs$vwretd,
     est_period_cs,
     reg_mkt_cs$residuals
   )
@@ -210,7 +210,7 @@ t_3_cs = sum(
 t_3_rt = sum(
   patell_inrow(
     test_period_3_rt$abnormal,
-    test_period_3_rt$sprtrn,
+    test_period_3_rt$vwretd,
     est_period_rt,
     reg_mkt_rt$residuals
   )
@@ -219,7 +219,7 @@ t_3_rt = sum(
 t_3_comb3 = sum(
   patell_inrow(
     test_period_3_comb3$abnormal,
-    test_period_3_comb3$sprtrn,
+    test_period_3_comb3$vwretd,
     est_period_comb3,
     reg_mkt_comb3$residuals
   )
@@ -237,19 +237,19 @@ total_t
 p_val =as.data.frame(
   rbind(
     cbind(
-      pt((total_t[1,1]),nrow(test_period_1_cs),lower.tail = TRUE),
-      pt((total_t[1,2]),nrow(test_period_1_rt),lower.tail = FALSE),
-      pt((total_t[1,3]),nrow(test_period_1_comb1),lower.tail = FALSE)
+      pt((total_t[1,1]),248,lower.tail = TRUE),
+      pt((total_t[1,2]),248,lower.tail = FALSE),
+      pt((total_t[1,3]),248,lower.tail = FALSE)
     ),
     cbind(
-      pt((total_t[2,1]),nrow(test_period_2_cs),lower.tail = TRUE),
-      pt((total_t[2,2]),nrow(test_period_2_rt),lower.tail = FALSE),
-      pt((total_t[2,3]),nrow(test_period_2_comb2),lower.tail = FALSE)
+      pt((total_t[2,1]),248,lower.tail = TRUE),
+      pt((total_t[2,2]),248,lower.tail = FALSE),
+      pt((total_t[2,3]),248,lower.tail = FALSE)
     ),
     cbind(
-      pt((total_t[3,1]),nrow(test_period_3_cs),lower.tail = TRUE),
-      pt((total_t[3,2]),nrow(test_period_3_rt),lower.tail = FALSE),
-      pt((total_t[3,3]),nrow(test_period_3_comb3),lower.tail = FALSE)
+      pt((total_t[3,1]),248,lower.tail = TRUE),
+      pt((total_t[3,2]),248,lower.tail = FALSE),
+      pt((total_t[3,3]),248,lower.tail = FALSE)
     )
   ),row.names = c("test_period_1","test_period_2","test_period_3")
 )
@@ -264,31 +264,31 @@ p_val
 #normal t
 scholes_williams = function(est_period,reg_mkt){
   temp = est_period[-1,]
-  reg_t = lm(RET~sprtrn,data = temp)
+  reg_t = lm(RET~vwretd,data = temp)
   beta_t = reg_mkt$coefficients[2]
   #t-1
   lag_1 = as.data.frame(est_period$RET)
   lag_1 = lag_1[-1,]#remove first row of stock return
-  lag_1 = cbind(lag_1,head(est_period$sprtrn,-1))#remove last row of market return
+  lag_1 = cbind(lag_1,head(est_period$vwretd,-1))#remove last row of market return
   lag_1 = as.data.frame(lag_1)
-  colnames(lag_1)=c("RET","sprtrn")
-  reg_lag_1 = lm(RET~sprtrn,data = lag_1)
+  colnames(lag_1)=c("RET","vwretd")
+  reg_lag_1 = lm(RET~vwretd,data = lag_1)
   beta_tneg1 = reg_lag_1$coefficients[2]
   #t+1 
-  lead_1 = as.data.frame(est_period$sprtrn)#get market return
+  lead_1 = as.data.frame(est_period$vwretd)#get market return
   lead_1 = lead_1[-1,]#remove first market return
   lead_1 = cbind(lead_1,head(est_period$RET,-1))#remove last row of stock return
   lead_1 = as.data.frame(lead_1)
-  colnames(lead_1) = c("sprtrn","RET")
-  reg_prior_1 = lm(RET~sprtrn,data = lead_1)
+  colnames(lead_1) = c("vwretd","RET")
+  reg_prior_1 = lm(RET~vwretd,data = lead_1)
   beta_tplus1 = reg_prior_1$coefficients[2]
   #auto-correlation coefficient of the market return rhom 
-  rhom=cor(temp$sprtrn,lag_1$sprtrn)
+  rhom=cor(temp$vwretd,lag_1$vwretd)
   #beta_sw
   beta_sw=sum(beta_t,beta_tneg1,beta_tplus1)/(1+2*rhom)
   #alpha_sw 
   alpha_1 = (1/(nrow(temp)-1))*sum(temp$RET[2:(nrow(temp)-1)])
-  alpha_2 = beta_sw*sum(temp$sprtrn[2:(nrow(temp)-1)])*(1/(nrow(temp)-1))
+  alpha_2 = beta_sw*sum(temp$vwretd[2:(nrow(temp)-1)])*(1/(nrow(temp)-1))
   alpha_sw = alpha_1-alpha_2
   coef_sw=cbind(alpha_sw,beta_sw)
   return (coef_sw)
@@ -300,17 +300,17 @@ comb_1_sw=scholes_williams(est_period_comb1,reg_mkt_comb1)
 comb_2_sw=scholes_williams(est_period_comb2,reg_mkt_comb2)
 comb_3_sw=scholes_williams(est_period_comb3,reg_mkt_comb3)
 #compute expected return
-test_period_1_cs$mkt_model_sw = cs_coef_sw[1]+cs_coef_sw[2]*test_period_1_cs$sprtrn
-test_period_2_cs$mkt_model_sw = cs_coef_sw[1]+cs_coef_sw[2]*test_period_2_cs$sprtrn
-test_period_3_cs$mkt_model_sw = cs_coef_sw[1]+cs_coef_sw[2]*test_period_3_cs$sprtrn
+test_period_1_cs$mkt_model_sw = cs_coef_sw[1]+cs_coef_sw[2]*test_period_1_cs$vwretd
+test_period_2_cs$mkt_model_sw = cs_coef_sw[1]+cs_coef_sw[2]*test_period_2_cs$vwretd
+test_period_3_cs$mkt_model_sw = cs_coef_sw[1]+cs_coef_sw[2]*test_period_3_cs$vwretd
 
-test_period_1_rt$mkt_model_sw = rt_coef_sw[1]+rt_coef_sw[2]*test_period_1_rt$sprtrn
-test_period_2_rt$mkt_model_sw = rt_coef_sw[1]+rt_coef_sw[2]*test_period_2_rt$sprtrn
-test_period_3_rt$mkt_model_sw = rt_coef_sw[1]+rt_coef_sw[2]*test_period_3_rt$sprtrn
+test_period_1_rt$mkt_model_sw = rt_coef_sw[1]+rt_coef_sw[2]*test_period_1_rt$vwretd
+test_period_2_rt$mkt_model_sw = rt_coef_sw[1]+rt_coef_sw[2]*test_period_2_rt$vwretd
+test_period_3_rt$mkt_model_sw = rt_coef_sw[1]+rt_coef_sw[2]*test_period_3_rt$vwretd
 
-test_period_1_comb1$mkt_model_sw = comb_1_sw[1]+comb_1_sw[2]*test_period_1_comb1$sprtrn
-test_period_2_comb2$mkt_model_sw = comb_2_sw[1]+comb_2_sw[2]*test_period_2_comb2$sprtrn
-test_period_3_comb3$mkt_model_sw = comb_3_sw[1]+comb_3_sw[2]*test_period_3_comb3$sprtrn
+test_period_1_comb1$mkt_model_sw = comb_1_sw[1]+comb_1_sw[2]*test_period_1_comb1$vwretd
+test_period_2_comb2$mkt_model_sw = comb_2_sw[1]+comb_2_sw[2]*test_period_2_comb2$vwretd
+test_period_3_comb3$mkt_model_sw = comb_3_sw[1]+comb_3_sw[2]*test_period_3_comb3$vwretd
 #abnormal return
 test_period_1_cs$abnormal_sw = test_period_1_cs$RET-test_period_1_cs$mkt_model_sw
 test_period_2_cs$abnormal_sw = test_period_2_cs$RET-test_period_2_cs$mkt_model_sw
@@ -338,26 +338,27 @@ car_2_sw = cbind(car_2_cs_sw,car_2_rt_sw,car_2_comb2_sw)
 car_3_cs_sw=sum(test_period_3_cs$abnormal_sw)
 car_3_rt_sw=sum(test_period_3_rt$abnormal_sw)
 car_3_comb3_sw=sum(test_period_3_comb3$abnormal_sw)
+
 car_3_sw = cbind(car_3_cs_sw,car_3_rt_sw,car_3_comb3_sw)
 
-car_sw = as.data.frame(rbind(car_1_sw,car_2_sw,car_3_comb3_sw),
+car_sw = as.data.frame(rbind(car_1_sw,car_2_sw,car_3_sw),
                        row.names = c("test_period_1","test_period_2","test_period_3")
                        )
 colnames(car_sw)=c("car_RT_sw","car_RT_sw","car_Combined_sw")
 
 car_sw
 #regression residuals for sw method need to be computed by hand 
-est_period_cs$residuals = est_period_cs$RET-cs_coef_sw[1]-cs_coef_sw[2]*est_period_cs$sprtrn
-est_period_rt$residuals = est_period_rt$RET-rt_coef_sw[1]-rt_coef_sw[2]*est_period_rt$sprtrn
-est_period_comb1$residuals = est_period_comb1$RET-comb_1_sw[1]-comb_1_sw[2]*est_period_comb1$sprtrn
-est_period_comb2$residuals = est_period_comb2$RET-comb_2_sw[1]-comb_2_sw[2]*est_period_comb2$sprtrn
-est_period_comb3$residuals = est_period_comb3$RET-comb_3_sw[1]-comb_3_sw[2]*est_period_comb3$sprtrn
+est_period_cs$residuals = est_period_cs$RET-cs_coef_sw[1]-cs_coef_sw[2]*est_period_cs$vwretd
+est_period_rt$residuals = est_period_rt$RET-rt_coef_sw[1]-rt_coef_sw[2]*est_period_rt$vwretd
+est_period_comb1$residuals = est_period_comb1$RET-comb_1_sw[1]-comb_1_sw[2]*est_period_comb1$vwretd
+est_period_comb2$residuals = est_period_comb2$RET-comb_2_sw[1]-comb_2_sw[2]*est_period_comb2$vwretd
+est_period_comb3$residuals = est_period_comb3$RET-comb_3_sw[1]-comb_3_sw[2]*est_period_comb3$vwretd
 #t test with Patell 
 #time period 1
 t_1_cs_sw = sum(
   patell_inrow(
     test_period_1_cs$abnormal_sw,
-    test_period_1_cs$sprtrn,
+    test_period_1_cs$vwretd,
     est_period_cs,
     est_period_cs$residuals
   )
@@ -366,7 +367,7 @@ t_1_cs_sw = sum(
 t_1_rt_sw = sum(
   patell_inrow(
     test_period_1_rt$abnormal_sw,
-    test_period_1_rt$sprtrn,
+    test_period_1_rt$vwretd,
     est_period_rt,
     est_period_rt$residuals
   )
@@ -375,7 +376,7 @@ t_1_rt_sw = sum(
 t_1_comb1_sw = sum(
   patell_inrow(
     test_period_1_comb1$abnormal_sw,
-    test_period_1_comb1$sprtrn,
+    test_period_1_comb1$vwretd,
     est_period_comb1,
     est_period_comb1$residuals
   )
@@ -388,7 +389,7 @@ t_1_sw=cbind(t_1_cs_sw,t_1_rt_sw,t_1_comb1_sw)
 t_2_cs_sw = sum(
   patell_inrow(
     test_period_2_cs$abnormal_sw,
-    test_period_2_cs$sprtrn,
+    test_period_2_cs$vwretd,
     est_period_cs,
     est_period_cs$residuals
   )
@@ -397,7 +398,7 @@ t_2_cs_sw = sum(
 t_2_rt_sw = sum(
   patell_inrow(
     test_period_2_rt$abnormal_sw,
-    test_period_2_rt$sprtrn,
+    test_period_2_rt$vwretd,
     est_period_rt,
     est_period_rt$residuals
   )
@@ -406,7 +407,7 @@ t_2_rt_sw = sum(
 t_2_comb2_sw = sum(
   patell_inrow(
     test_period_2_comb2$abnormal_sw,
-    test_period_2_comb2$sprtrn,
+    test_period_2_comb2$vwretd,
     est_period_comb2,
     est_period_comb2$residuals
   )
@@ -418,7 +419,7 @@ t_2_sw=cbind(t_2_cs_sw,t_2_rt_sw,t_2_comb2_sw)
 t_3_cs_sw = sum(
   patell_inrow(
     test_period_3_cs$abnormal_sw,
-    test_period_3_cs$sprtrn,
+    test_period_3_cs$vwretd,
     est_period_cs,
     est_period_cs$residuals
   )
@@ -427,7 +428,7 @@ t_3_cs_sw = sum(
 t_3_rt_sw = sum(
   patell_inrow(
     test_period_3_rt$abnormal_sw,
-    test_period_3_rt$sprtrn,
+    test_period_3_rt$vwretd,
     est_period_rt,
     est_period_rt$residuals
   )
@@ -436,7 +437,7 @@ t_3_rt_sw = sum(
 t_3_comb3_sw = sum(
   patell_inrow(
     test_period_3_comb3$abnormal_sw,
-    test_period_3_comb3$sprtrn,
+    test_period_3_comb3$vwretd,
     est_period_comb3,
     est_period_comb3$residuals
   )
@@ -454,19 +455,19 @@ total_t_sw
 p_val_sw =as.data.frame(
   rbind(
     cbind(
-      pt((total_t_sw[1,1]),nrow(test_period_1_cs),lower.tail = TRUE),
-      pt((total_t_sw[1,2]),nrow(test_period_1_rt),lower.tail = FALSE),
-      pt((total_t_sw[1,3]),nrow(test_period_1_comb1),lower.tail = FALSE)
+      pt((total_t_sw[1,1]),248,lower.tail = TRUE),
+      pt((total_t_sw[1,2]),248,lower.tail = FALSE),
+      pt((total_t_sw[1,3]),248,lower.tail = FALSE)
     ),
     cbind(
-      pt((total_t_sw[2,1]),nrow(test_period_2_cs),lower.tail = TRUE),
-      pt((total_t_sw[2,2]),nrow(test_period_2_rt),lower.tail = FALSE),
-      pt((total_t_sw[2,3]),nrow(test_period_2_comb2),lower.tail = FALSE)
+      pt((total_t_sw[2,1]),248,lower.tail = TRUE),
+      pt((total_t_sw[2,2]),248,lower.tail = FALSE),
+      pt((total_t_sw[2,3]),248,lower.tail = FALSE)
     ),
     cbind(
-      pt(-abs(total_t_sw[3,1]),nrow(test_period_3_cs),lower.tail = TRUE),
-      pt(-abs(total_t_sw[3,2]),nrow(test_period_3_rt),lower.tail = FALSE),
-      pt((total_t_sw[3,3]),nrow(test_period_3_comb3),lower.tail = FALSE)
+      pt((total_t_sw[3,1]),248,lower.tail = TRUE),
+      pt((total_t_sw[3,2]),248,lower.tail = FALSE),
+      pt((total_t_sw[3,3]),248,lower.tail = FALSE)
     )
   ),row.names = c("test_period_1","test_period_2","test_period_3")
 )
@@ -726,16 +727,18 @@ resettest(best_sentiment_cs)
 resettest(best_sentiment_rt)
 resettest(best_sentiment_comb) #all pass
 ####auto correlation test####
-bgtest(best_sentiment_cs,order = 5)
-bgtest(best_sentiment_rt,order = 5)
-bgtest(best_sentiment_comb,order = 5) #all pass
+bgtest(best_sentiment_cs,order = 5) # not pass, auto correlation
+bgtest(best_sentiment_rt,order = 5) # pass
+bgtest(best_sentiment_comb,order = 5) # pass
+
+coeftest(best_sentiment_cs,vcov. = NeweyWest)# is the newey west standard error
 
 ###store the test_period in csv###
 # write.csv(test_period_1_comb1,"st_result\\test_period_1_comb1.csv", row.names = FALSE)
 # write.csv(test_period_1_cs,"st_result\\test_period_1_cs.csv", row.names = FALSE)
 # write.csv(test_period_1_rt,"st_result\\test_period_1_rt.csv", row.names = FALSE)
 # 
-# write.csv(test_period_2_comb1,"st_result\\test_period_2_comb2.csv", row.names = FALSE)
+# write.csv(test_period_2_comb2,"st_result\\test_period_2_comb2.csv", row.names = FALSE)
 # write.csv(test_period_2_cs,"st_result\\test_period_2_cs.csv", row.names = FALSE)
 # write.csv(test_period_2_rt,"st_result\\test_period_2_rt.csv", row.names = FALSE)
 # 
@@ -798,8 +801,33 @@ rbind(
     mean(sentiment_rt_mg$rtmg_num_neg,na.rm = TRUE)
   )
 )
-#section 7.2 table 8
+#section 7.2 table 8,9
 #this may take a while.
 ols_step_best_subset(reg_sentiment_cs_0)
 ols_step_best_subset(reg_sentiment_rt_0)
 ols_step_best_subset(reg_sentiment_comb_0)
+#table 10 
+
+####Hetroskedasticity test####
+
+#if reject then hetro present
+bptest(best_sentiment_cs)#don't reject, no Hetroskedasticity 
+bptest(best_sentiment_rt)#reject, present
+bptest(best_sentiment_comb)#don't reject, no Hetroskedasticity 
+
+#adjust for Hetroskedasticity in the last model
+
+####Ramsy RESET test####
+resettest(best_sentiment_cs)
+resettest(best_sentiment_rt)
+resettest(best_sentiment_comb) #all pass
+####auto correlation test####
+bgtest(best_sentiment_cs,order = 5) # not pass, auto correlation
+bgtest(best_sentiment_rt,order = 5) # pass
+bgtest(best_sentiment_comb,order = 5) # pass
+
+#table 11
+
+coeftest(best_sentiment_rt,vcov. = vcovHC(best_sentiment_rt,"HC1"))#HC1 is the white standard errors
+coeftest(best_sentiment_cs,vcov. = NeweyWest)# is the newey west standard error
+summary(best_sentiment_rt)
